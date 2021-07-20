@@ -1,0 +1,654 @@
+{
+ "cells": [
+  {
+   "cell_type": "code",
+   "execution_count": 47,
+   "id": "46a6be9f-18bf-4656-8159-2f6bc05e7e3d",
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "#PREDICTING THE REVENUE OF THE ADVERTISEMENTS(ad's)."
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 48,
+   "id": "693170a8-3817-422a-9c99-5afa0b5b37ae",
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "#importing required libraries\n",
+    "import pandas as pd\n",
+    "from sklearn.model_selection import train_test_split\n",
+    "from sklearn.compose import ColumnTransformer\n",
+    "from sklearn.pipeline import Pipeline\n",
+    "from sklearn.impute import SimpleImputer\n",
+    "from sklearn.preprocessing import OneHotEncoder\n",
+    "from sklearn.ensemble import RandomForestRegressor\n",
+    "from sklearn.metrics import mean_absolute_error\n",
+    "from sklearn.linear_model import LinearRegression"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 49,
+   "id": "49428935-bd66-480f-be68-de7fbf3e9d06",
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "#readig the previous data as train_data\n",
+    "train_data=pd.read_csv(r\"C:\\Users\\sailo\\Downloads\\Train_Data.csv\")"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 50,
+   "id": "67cb72c3-0157-4fe6-bd04-44fdcf4ab14d",
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "#reading the data to be estimated as test_data\n",
+    "test_data=pd.read_csv(r\"C:\\Users\\sailo\\Downloads\\Test_Data.csv\")"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 51,
+   "id": "aca0f32a-0b9a-4348-9119-6adb5315c2ff",
+   "metadata": {},
+   "outputs": [
+    {
+     "data": {
+      "text/html": [
+       "<div>\n",
+       "<style scoped>\n",
+       "    .dataframe tbody tr th:only-of-type {\n",
+       "        vertical-align: middle;\n",
+       "    }\n",
+       "\n",
+       "    .dataframe tbody tr th {\n",
+       "        vertical-align: top;\n",
+       "    }\n",
+       "\n",
+       "    .dataframe thead th {\n",
+       "        text-align: right;\n",
+       "    }\n",
+       "</style>\n",
+       "<table border=\"1\" class=\"dataframe\">\n",
+       "  <thead>\n",
+       "    <tr style=\"text-align: right;\">\n",
+       "      <th></th>\n",
+       "      <th>date</th>\n",
+       "      <th>campaign</th>\n",
+       "      <th>adgroup</th>\n",
+       "      <th>ad</th>\n",
+       "      <th>impressions</th>\n",
+       "      <th>clicks</th>\n",
+       "      <th>cost</th>\n",
+       "      <th>conversions</th>\n",
+       "      <th>revenue</th>\n",
+       "    </tr>\n",
+       "  </thead>\n",
+       "  <tbody>\n",
+       "    <tr>\n",
+       "      <th>0</th>\n",
+       "      <td>01-08-2020</td>\n",
+       "      <td>campaign 1</td>\n",
+       "      <td>adgroup 1</td>\n",
+       "      <td>ad 1</td>\n",
+       "      <td>24</td>\n",
+       "      <td>6</td>\n",
+       "      <td>0.08</td>\n",
+       "      <td>0</td>\n",
+       "      <td>0.00</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>1</th>\n",
+       "      <td>01-08-2020</td>\n",
+       "      <td>campaign 1</td>\n",
+       "      <td>adgroup 2</td>\n",
+       "      <td>ad 1</td>\n",
+       "      <td>1</td>\n",
+       "      <td>0</td>\n",
+       "      <td>0.00</td>\n",
+       "      <td>0</td>\n",
+       "      <td>0.00</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>2</th>\n",
+       "      <td>01-08-2020</td>\n",
+       "      <td>campaign 1</td>\n",
+       "      <td>adgroup 3</td>\n",
+       "      <td>ad 1</td>\n",
+       "      <td>13</td>\n",
+       "      <td>4</td>\n",
+       "      <td>0.04</td>\n",
+       "      <td>0</td>\n",
+       "      <td>0.00</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>3</th>\n",
+       "      <td>01-08-2020</td>\n",
+       "      <td>campaign 1</td>\n",
+       "      <td>adgroup 4</td>\n",
+       "      <td>ad 1</td>\n",
+       "      <td>5</td>\n",
+       "      <td>4</td>\n",
+       "      <td>0.08</td>\n",
+       "      <td>0</td>\n",
+       "      <td>0.00</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>4</th>\n",
+       "      <td>01-08-2020</td>\n",
+       "      <td>campaign 1</td>\n",
+       "      <td>adgroup 1</td>\n",
+       "      <td>ad 2</td>\n",
+       "      <td>247</td>\n",
+       "      <td>126</td>\n",
+       "      <td>1.29</td>\n",
+       "      <td>4</td>\n",
+       "      <td>925.71</td>\n",
+       "    </tr>\n",
+       "  </tbody>\n",
+       "</table>\n",
+       "</div>"
+      ],
+      "text/plain": [
+       "         date    campaign    adgroup    ad  impressions  clicks  cost  \\\n",
+       "0  01-08-2020  campaign 1  adgroup 1  ad 1           24       6  0.08   \n",
+       "1  01-08-2020  campaign 1  adgroup 2  ad 1            1       0  0.00   \n",
+       "2  01-08-2020  campaign 1  adgroup 3  ad 1           13       4  0.04   \n",
+       "3  01-08-2020  campaign 1  adgroup 4  ad 1            5       4  0.08   \n",
+       "4  01-08-2020  campaign 1  adgroup 1  ad 2          247     126  1.29   \n",
+       "\n",
+       "   conversions  revenue  \n",
+       "0            0     0.00  \n",
+       "1            0     0.00  \n",
+       "2            0     0.00  \n",
+       "3            0     0.00  \n",
+       "4            4   925.71  "
+      ]
+     },
+     "execution_count": 51,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "#checking first few data of train_data\n",
+    "train_data.head()"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 52,
+   "id": "fe162004-4fcf-4b78-a20f-b58ef879bae0",
+   "metadata": {},
+   "outputs": [
+    {
+     "data": {
+      "text/html": [
+       "<div>\n",
+       "<style scoped>\n",
+       "    .dataframe tbody tr th:only-of-type {\n",
+       "        vertical-align: middle;\n",
+       "    }\n",
+       "\n",
+       "    .dataframe tbody tr th {\n",
+       "        vertical-align: top;\n",
+       "    }\n",
+       "\n",
+       "    .dataframe thead th {\n",
+       "        text-align: right;\n",
+       "    }\n",
+       "</style>\n",
+       "<table border=\"1\" class=\"dataframe\">\n",
+       "  <thead>\n",
+       "    <tr style=\"text-align: right;\">\n",
+       "      <th></th>\n",
+       "      <th>date</th>\n",
+       "      <th>campaign</th>\n",
+       "      <th>adgroup</th>\n",
+       "      <th>ad</th>\n",
+       "      <th>cost</th>\n",
+       "      <th>impressions</th>\n",
+       "      <th>clicks</th>\n",
+       "      <th>conversions</th>\n",
+       "    </tr>\n",
+       "  </thead>\n",
+       "  <tbody>\n",
+       "    <tr>\n",
+       "      <th>0</th>\n",
+       "      <td>01-03-2021</td>\n",
+       "      <td>campaign 1</td>\n",
+       "      <td>adgroup 1</td>\n",
+       "      <td>ad 1</td>\n",
+       "      <td>0.58</td>\n",
+       "      <td>121</td>\n",
+       "      <td>49</td>\n",
+       "      <td>1</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>1</th>\n",
+       "      <td>01-03-2021</td>\n",
+       "      <td>campaign 1</td>\n",
+       "      <td>adgroup 3</td>\n",
+       "      <td>ad 1</td>\n",
+       "      <td>0.17</td>\n",
+       "      <td>22</td>\n",
+       "      <td>12</td>\n",
+       "      <td>0</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>2</th>\n",
+       "      <td>01-03-2021</td>\n",
+       "      <td>campaign 1</td>\n",
+       "      <td>adgroup 4</td>\n",
+       "      <td>ad 1</td>\n",
+       "      <td>0.05</td>\n",
+       "      <td>5</td>\n",
+       "      <td>3</td>\n",
+       "      <td>0</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>3</th>\n",
+       "      <td>01-03-2021</td>\n",
+       "      <td>campaign 1</td>\n",
+       "      <td>adgroup 2</td>\n",
+       "      <td>ad 1</td>\n",
+       "      <td>0.01</td>\n",
+       "      <td>2</td>\n",
+       "      <td>1</td>\n",
+       "      <td>0</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>4</th>\n",
+       "      <td>01-03-2021</td>\n",
+       "      <td>campaign 1</td>\n",
+       "      <td>adgroup 2</td>\n",
+       "      <td>ad 2</td>\n",
+       "      <td>0.01</td>\n",
+       "      <td>3</td>\n",
+       "      <td>1</td>\n",
+       "      <td>0</td>\n",
+       "    </tr>\n",
+       "  </tbody>\n",
+       "</table>\n",
+       "</div>"
+      ],
+      "text/plain": [
+       "         date    campaign    adgroup    ad  cost  impressions  clicks  \\\n",
+       "0  01-03-2021  campaign 1  adgroup 1  ad 1  0.58          121      49   \n",
+       "1  01-03-2021  campaign 1  adgroup 3  ad 1  0.17           22      12   \n",
+       "2  01-03-2021  campaign 1  adgroup 4  ad 1  0.05            5       3   \n",
+       "3  01-03-2021  campaign 1  adgroup 2  ad 1  0.01            2       1   \n",
+       "4  01-03-2021  campaign 1  adgroup 2  ad 2  0.01            3       1   \n",
+       "\n",
+       "   conversions  \n",
+       "0            1  \n",
+       "1            0  \n",
+       "2            0  \n",
+       "3            0  \n",
+       "4            0  "
+      ]
+     },
+     "execution_count": 52,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "#checking first few data of test_data\n",
+    "test_data.head()"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 53,
+   "id": "2f2599e0-8daf-4a62-b4be-6a9873b87f15",
+   "metadata": {},
+   "outputs": [
+    {
+     "data": {
+      "text/plain": [
+       "0"
+      ]
+     },
+     "execution_count": 53,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "#checking the null points in data\n",
+    "train_data.isnull().sum().max()"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 54,
+   "id": "6d08a1eb-403e-4d25-a9b8-974d7a4ecec0",
+   "metadata": {},
+   "outputs": [
+    {
+     "data": {
+      "text/plain": [
+       "0"
+      ]
+     },
+     "execution_count": 54,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "#checking the null points in data\n",
+    "test_data.isnull().sum().max()"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 55,
+   "id": "cd032cba-8519-4155-add2-915f2d7d4c82",
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "#for training the train_data spliting into X and Y"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 56,
+   "id": "d4d66b74-c765-40fb-af13-5cd14f2afe2b",
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "#removing the 'revenue' data which we need to predict from the train_data and removing the 'date' data which is of no-use in predicting and \n",
+    "#assigning this data in X \n",
+    "X=train_data.drop(['revenue','date'],axis=1)\n",
+    "#assigning the revenue data as Y\n",
+    "Y=train_data.revenue\n",
+    "#Assigning the test_data as x_test_full\n",
+    "x_test_full=test_data.drop(['date'],axis=1)"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 57,
+   "id": "188d1eb6-b071-4fe8-86bb-373b688e6e55",
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "#dividing data for training the model into X_train_full,y_train full for traing and x_valid_full,y_valid_full for checking the predictive test \n",
+    "#in the train_data\n",
+    "x_train_full,x_valid_full,y_train,y_valid=train_test_split(X,Y,random_state=10)"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 58,
+   "id": "18079870-9440-475c-a85e-3830aa1f0ba2",
+   "metadata": {},
+   "outputs": [
+    {
+     "data": {
+      "text/plain": [
+       "['campaign', 'adgroup']"
+      ]
+     },
+     "execution_count": 58,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "#diving the data into catagorical and numerical data columns for encoding the catagorial data\n",
+    "#x_cata_col for catagorical data columns and for getting better prediction we are taking the no.of didtinct data as less than 10(x_train_full[i].nunique() < 10 )\n",
+    "x_cat_col= [i for i in x_train_full.columns if\n",
+    "                    x_train_full[i].nunique() < 10 and\n",
+    "                    x_train_full[i].dtype == \"object\"]\n",
+    "x_cat_col"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 59,
+   "id": "a2221b44-2ac6-4226-8246-d60c39043e4b",
+   "metadata": {},
+   "outputs": [
+    {
+     "data": {
+      "text/plain": [
+       "['impressions', 'clicks', 'cost', 'conversions']"
+      ]
+     },
+     "execution_count": 59,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "#x_num_col for numerical data columns\n",
+    "x_num_col=[i for i in x_train_full.columns if \n",
+    "                x_train_full[i].dtype in ['int64', 'float64']]\n",
+    "x_num_col"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 60,
+   "id": "f9fb2895-d5a3-4393-9c3d-2e4bad2d8ac5",
+   "metadata": {},
+   "outputs": [
+    {
+     "data": {
+      "text/plain": [
+       "['campaign', 'adgroup', 'impressions', 'clicks', 'cost', 'conversions']"
+      ]
+     },
+     "execution_count": 60,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "#t_col as total columns i.e,catogrical columns and numerical columns after feature engineering\n",
+    "t_col=x_cat_col+x_num_col\n",
+    "t_col"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 61,
+   "id": "a89ca907-4f6e-46e8-89ad-72c306a1ff8e",
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "#new x_train,x_valid,x_test after modifing the data columns\n",
+    "x_train=x_train_full[t_col].copy()\n",
+    "x_valid = x_valid_full[t_col].copy()\n",
+    "test_new = x_test_full[t_col].copy()"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 62,
+   "id": "403095a7-5e2e-487f-a523-b69656ec4d7c",
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "#preprocessing the data by using the simple imputer for numerical data to replace the NANN values in the data and using the piplining in \n",
+    "#catagorical data for assigning the steps of imputing the NANN values and encoding the catagorical data."
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 63,
+   "id": "340a08e7-41f5-4a90-814b-bc869814e5f1",
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "numerical_transformer = SimpleImputer(strategy='most_frequent')\n",
+    "categorical_transformer = Pipeline(steps=[('imputer', SimpleImputer(strategy='constant')),('onehot', OneHotEncoder(handle_unknown='ignore'))])\n",
+    "preprocessor = ColumnTransformer(transformers=[('num', numerical_transformer, x_num_col),('cat', categorical_transformer, x_cat_col) ])"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 64,
+   "id": "9711a73a-abab-445d-af33-80d842764dd5",
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "#using the RandomForestRegressor as machine learning model\n",
+    "model = RandomForestRegressor(n_estimators=100, random_state=10)"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 65,
+   "id": "117e5b95-dc8a-4572-9dad-85ef5845a2e2",
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "#using the pipline for piplining the steps for the other data\n",
+    "clf = Pipeline(steps=[('preprocessor', preprocessor),\n",
+    "                      ('model', model)\n",
+    "                     ])"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 66,
+   "id": "ad99f34a-1f29-4fe5-8557-c47f00cdaf62",
+   "metadata": {},
+   "outputs": [
+    {
+     "data": {
+      "text/plain": [
+       "Pipeline(steps=[('preprocessor',\n",
+       "                 ColumnTransformer(transformers=[('num',\n",
+       "                                                  SimpleImputer(strategy='most_frequent'),\n",
+       "                                                  ['impressions', 'clicks',\n",
+       "                                                   'cost', 'conversions']),\n",
+       "                                                 ('cat',\n",
+       "                                                  Pipeline(steps=[('imputer',\n",
+       "                                                                   SimpleImputer(strategy='constant')),\n",
+       "                                                                  ('onehot',\n",
+       "                                                                   OneHotEncoder(handle_unknown='ignore'))]),\n",
+       "                                                  ['campaign', 'adgroup'])])),\n",
+       "                ('model', RandomForestRegressor(random_state=10))])"
+      ]
+     },
+     "execution_count": 66,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "#fitting the train_data\n",
+    "clf.fit(x_train,y_train)"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 67,
+   "id": "09690a35-c16f-4db1-b145-13f8c49b09e3",
+   "metadata": {},
+   "outputs": [
+    {
+     "data": {
+      "text/plain": [
+       "77.05907177019543"
+      ]
+     },
+     "execution_count": 67,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "#checking the mean_absolute_error for the x_valid data predicted revenue data and original revenue data\n",
+    "mean_absolute_error(y_valid,clf.predict(x_valid))"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 68,
+   "id": "3f8813c7-40ee-41de-bd91-0d0c780f6d7e",
+   "metadata": {},
+   "outputs": [
+    {
+     "data": {
+      "text/plain": [
+       "array([0.86394199, 0.44530937, 0.89732414, 0.88902155, 0.88208772])"
+      ]
+     },
+     "execution_count": 68,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "#checking the cross validatin score\n",
+    "from sklearn.model_selection import cross_val_score\n",
+    "cross_val_score(clf,x_valid,y_valid,cv=5)"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 69,
+   "id": "c4edb6b9-c0d1-4dfa-867c-18cde54fe89e",
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "#precting the test data revenue\n",
+    "predictions=clf.predict(test_new)"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 70,
+   "id": "6ec5e628-378b-43ca-a320-68a10eb661b7",
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "#saving the revenue data locally\n",
+    "res = pd.DataFrame(predictions) \n",
+    "res.index = test_new.index \n",
+    "res.columns = [\"revenue\"]\n",
+    "res.to_csv(\"prediction_results.csv\", index = False)      "
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "id": "7a7bfbbd-60c8-4d30-8c07-1caf7c6f2888",
+   "metadata": {},
+   "outputs": [],
+   "source": []
+  }
+ ],
+ "metadata": {
+  "kernelspec": {
+   "display_name": "Python 3",
+   "language": "python",
+   "name": "python3"
+  },
+  "language_info": {
+   "codemirror_mode": {
+    "name": "ipython",
+    "version": 3
+   },
+   "file_extension": ".py",
+   "mimetype": "text/x-python",
+   "name": "python",
+   "nbconvert_exporter": "python",
+   "pygments_lexer": "ipython3",
+   "version": "3.8.8"
+  }
+ },
+ "nbformat": 4,
+ "nbformat_minor": 5
+}
